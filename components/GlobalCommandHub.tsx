@@ -17,7 +17,13 @@ interface GlobalCommandHubProps {
   onAssetSelect: (ticker: EnrichedTicker) => void;
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+let aiInstance: GoogleGenAI | null = null;
+const getAI = () => {
+  if (!aiInstance) {
+    aiInstance = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  }
+  return aiInstance;
+};
 
 export const GlobalCommandHub: React.FC<GlobalCommandHubProps> = ({ tickers, exchange, onAssetSelect }) => {
   const [hubMode, setHubMode] = useState<'CLI' | 'MACRO_TERMINAL'>('CLI');
@@ -190,6 +196,7 @@ export const GlobalCommandHub: React.FC<GlobalCommandHubProps> = ({ tickers, exc
         if (ticker) { onAssetSelect(ticker); addMessage('SYSTEM', `JUMPING_TO_${symbol}_NODE`); }
         else { addMessage('SYSTEM', 'ERROR: TARGET_NOT_FOUND'); }
       } else {
+        const ai = getAI();
         const response = await ai.models.generateContent({
           model: 'gemini-3-flash-preview',
           contents: `SYSTEM: Grit Quant Terminal. QUERY: "${userQuery}". INSTRUCTIONS: Professional, technical, brief (30 words). No markdown.`,

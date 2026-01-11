@@ -1,7 +1,13 @@
-
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+let aiInstance: GoogleGenAI | null = null;
+
+const getAI = () => {
+  if (!aiInstance) {
+    aiInstance = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  }
+  return aiInstance;
+};
 
 export interface MacroDataPoint {
   date: number;
@@ -46,9 +52,7 @@ const fetchWithProxy = async (url: string) => {
   return null;
 };
 
-// Expanded Ticker Map for Macro Proxies
 const MACRO_TICKER_MAP: Record<string, string> = {
-  // USA / FRED Proxies
   'US_GDP': '^GSPC', 
   'US_CPI': 'TIP',  
   'US_UNRATE': '^IRX', 
@@ -56,18 +60,14 @@ const MACRO_TICKER_MAP: Record<string, string> = {
   'US_30Y': '^TYX',
   'US_FED_FUNDS': '^IRX',
   'US_M2': 'TLT',
-  'US_IP': 'XLI', // Industrial Production via Industrials ETF
-  'US_HOU': 'ITB', // Housing starts via Homebuilders ETF
-  
-  // INDIA / RBI Proxies
+  'US_IP': 'XLI', 
+  'US_HOU': 'ITB', 
   'IN_REPO': '^NSEI', 
   'IN_INR': 'USDINR=X',
   'IN_10Y': '^IN10YT',
   'IN_GDP': 'EPI',
   'IN_CPI': 'USDINR=X',
   'IN_FX_RES': 'INR=X',
-  
-  // GLOBAL
   'DXY': 'DX-Y.NYB',
   'GOLD': 'GC=F',
   'OIL': 'CL=F',
@@ -93,7 +93,7 @@ export const fetchMacroSeriesData = async (symbol: string, range: string = '1y')
 
 export const resolveMacroPrompt = async (query: string): Promise<MacroSeries | null> => {
   try {
-    // Stage 1: Use Gemini with Google Search to get the actual current data points and correct series mapping
+    const ai = getAI();
     const prompt = `
       You are the GRIT_TERMINAL Global Macro Intelligence Engine. 
       The user is querying the "Entire FRED and RBI DBIE Database".
@@ -129,7 +129,6 @@ export const resolveMacroPrompt = async (query: string): Promise<MacroSeries | n
     const resolution = JSON.parse(response.text || '{}');
     const ticker = MACRO_TICKER_MAP[resolution.id] || resolution.id || '^GSPC';
     
-    // Stage 2: Fetch historical timeline for charting
     const historicalData = await fetchMacroSeriesData(ticker, '1y');
 
     return {

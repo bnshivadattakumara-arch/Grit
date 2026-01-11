@@ -7,6 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://s3.tradingview.com/tv.js"></script>
     <script>
+      // Shim process.env for browser environments to prevent crashes
+      window.process = window.process || { env: { API_KEY: "" } };
+      
       tailwind.config = {
         theme: {
           extend: {
@@ -157,14 +160,14 @@
   <script type="importmap">
 {
   "imports": {
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "recharts": "https://esm.sh/recharts@^3.6.0",
-    "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
-    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "d3": "https://esm.sh/d3@^7.9.0",
-    "topojson-client": "https://esm.sh/topojson-client@^3.1.0"
+    "react/": "https://esm.sh/react@19.0.0/",
+    "react": "https://esm.sh/react@19.0.0",
+    "recharts": "https://esm.sh/recharts@2.15.0",
+    "@google/genai": "https://esm.sh/@google/genai@1.33.0",
+    "lucide-react": "https://esm.sh/lucide-react@0.468.0",
+    "react-dom/": "https://esm.sh/react-dom@19.0.0/",
+    "d3": "https://esm.sh/d3@7.9.0",
+    "topojson-client": "https://esm.sh/topojson-client@3.1.0"
   }
 }
 </script>

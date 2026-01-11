@@ -1,4 +1,3 @@
-
 export interface BinanceTicker {
   symbol: string;
   priceChange: string;
@@ -86,9 +85,6 @@ export interface PriceSnapshot {
   price: string;
 }
 
-/**
- * Interface for candlestick chart data used across terminal modules
- */
 export interface KlineData {
   time: number;
   open: number;
@@ -104,9 +100,11 @@ export enum SortField {
   CHANGE = 'priceChangePercent',
   VOLUME = 'quoteVolume',
   VOLATILITY = 'volatility',
+  SPREAD = 'spread',
   FUNDING_RATE = 'fundingRate',
   OPEN_INTEREST = 'openInterest',
-  LIQUIDATION = 'liquidation'
+  LIQUIDATION = 'liquidation',
+  TRADES = 'count'
 }
 
 export enum SortDirection {

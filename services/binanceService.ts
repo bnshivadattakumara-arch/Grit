@@ -1,4 +1,3 @@
-
 import { BinanceTicker, EnrichedTicker, Trade, FundingRateData, PriceSnapshot, OrderBook, KlineData } from '../types';
 
 const BASE_URL = 'https://api.binance.com/api/v3';
@@ -76,7 +75,9 @@ const processTickers = (data: any[], futuresData: any[] = []): EnrichedTicker[] 
       priceChangePercent: ticker.priceChangePercent || '0',
       quoteVolume: ticker.quoteVolume || '0',
       fundingRate: fData?.lastFundingRate,
-      openInterest: fData?.openInterest
+      openInterest: fData?.openInterest,
+      weightedAvgPrice: ticker.weightedAvgPrice || ticker.lastPrice,
+      count: ticker.count || 0
     };
   }).filter(t => parseFloat(t.lastPrice) > 0);
 };
@@ -146,8 +147,6 @@ export const fetchPriceHistory = async (symbol: string): Promise<number[]> => {
     return [];
   }
 };
-
-// Removed redundant local KlineData interface - now imported from ../types
 
 export const fetchKlines = async (symbol: string, interval: string = '1m', limit: number = 100): Promise<KlineData[]> => {
   try {

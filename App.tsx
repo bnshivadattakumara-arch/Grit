@@ -28,22 +28,19 @@ import { TradeHub } from './components/TradeHub';
 import { BettingHub } from './components/BettingHub';
 import { ThemeScrollWheel } from './components/ThemeScrollWheel';
 import { useTheme } from './contexts/ThemeContext';
-import { GoogleGenAI } from "@google/genai";
 import { 
   RefreshCw, BarChart2, Activity, Terminal, 
   Zap, Timer, LayoutGrid, Globe, 
   ArrowRightLeft, Cpu, Skull, Box,
   Home, Briefcase, Search, Building2, ChevronDown, TrendingUp,
-  Droplets, Banknote, Landmark, LineChart, Wallet2, Trophy
+  Droplets, Banknote, Landmark, LineChart, Wallet2, Trophy,
+  BrainCircuit, ShieldAlert, TrendingDown, Info
 } from 'lucide-react';
 
 export type ViewMode = 'MARKET' | 'FUNDING' | 'MOMENTUM' | 'HEATMAP';
 export type MainHub = 'HUB' | 'CRYPTO' | 'STOCKS' | 'COMMODITIES' | 'FOREX' | 'BONDS' | 'MACRO' | 'TRADE' | 'BETTING';
 export type CryptoSubTab = 'TERMINAL' | 'CONDUIT' | 'CARNAGE' | 'VISUALIZER';
 export type Exchange = 'BINANCE' | 'BYBIT' | 'OKX' | 'HYPERLIQUID' | 'COINBASE' | 'MEXC' | 'COINDCX' | 'COINSWITCH';
-
-// Initialize Gemini AI client once
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const SaturnLogo = () => (
   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-terminal-green">
@@ -74,14 +71,11 @@ function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('MARKET');
   const [conduitAsset, setConduitAsset] = useState<string>('BTC');
   
-  // Theme state now comes from Context
   const { theme } = useTheme();
   
-  // Stocks Logic
   const [stocksView, setStocksView] = useState<'MAP' | 'DETAIL'>('MAP');
   const [selectedCountryId, setSelectedCountryId] = useState<string | null>(null);
 
-  // Market Data State
   const [tickers, setTickers] = useState<EnrichedTicker[]>([]);
   const [fundingRates, setFundingRates] = useState<FundingRateData[]>([]);
   const [liquidations, setLiquidations] = useState<Liquidation[]>([]);
@@ -89,10 +83,6 @@ function App() {
   const [terminalLogs, setTerminalLogs] = useState<LogEntry[]>([]);
   
   const baseTickersRef = useRef<EnrichedTicker[]>([]); 
-  const isInitialMount = useRef(true);
-  const prevExchange = useRef<Exchange>(exchange);
-  
-  // Common State
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState<string>('');
@@ -113,21 +103,11 @@ function App() {
         totalUsd: prev.totalUsd + liq.usdValue,
         count: prev.count + 1
       }));
-      
-      if (liq.usdValue > 50000) {
-        addLog({
-          id: `liq-${liq.time}-${liq.symbol}`,
-          timestamp: liq.time,
-          type: 'DUMP',
-          message: `FORCED_ORDER :: ${liq.exchange} :: ${liq.symbol} :: $${(liq.usdValue/1000).toFixed(1)}K ${liq.side === 'SELL' ? 'LONG' : 'SHORT'}`
-        });
-      }
     });
     return () => liquidationAggregator.stop();
   }, []);
 
   const refreshBaseData = async () => {
-    if (activeHub !== 'CRYPTO' || cryptoTab !== 'TERMINAL') return;
     setLoading(true);
     try {
       let data: EnrichedTicker[] = [];
@@ -147,7 +127,6 @@ function App() {
       }
     } catch (err: any) {
       setError(err.message || `${exchange}_OFFLINE`);
-      addLog({ id: Date.now().toString(), timestamp: Date.now(), type: 'ERROR', message: `FAILURE :: ${exchange}_NODE_ACCESS_DENIED` });
     } finally {
       setLoading(false);
     }
@@ -198,6 +177,8 @@ function App() {
           case SortField.CHANGE: valA = parseFloat(a.priceChangePercent); valB = parseFloat(b.priceChangePercent); break;
           case SortField.VOLUME: valA = parseFloat(a.quoteVolume); valB = parseFloat(b.quoteVolume); break;
           case SortField.VOLATILITY: valA = a.volatility; valB = b.volatility; break;
+          case SortField.SPREAD: valA = a.spread; valB = b.spread; break;
+          case SortField.TRADES: valA = a.count; valB = b.count; break;
           case SortField.FUNDING_RATE: valA = parseFloat(a.fundingRate || '0'); valB = parseFloat(b.fundingRate || '0'); break;
           case SortField.OPEN_INTEREST: valA = parseFloat(a.openInterest || '0'); valB = parseFloat(b.openInterest || '0'); break;
           default: valA = parseFloat(a.quoteVolume); valB = parseFloat(b.quoteVolume);
@@ -227,21 +208,19 @@ function App() {
         </div>
 
         <div className="flex bg-terminal-black border border-terminal-darkGreen p-1 rounded-sm gap-1 overflow-x-auto no-scrollbar">
-          <button onClick={() => setActiveHub('HUB')} className={`px-5 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 border whitespace-nowrap ${activeHub === 'HUB' ? 'bg-terminal-green text-terminal-black border-terminal-green shadow-[0_0_10px_rgba(var(--terminal-green-rgb),0.3)]' : 'text-gray-500 border-transparent hover:text-terminal-contrast'}`}><Home size={14} /> CENTRAL_HUB</button>
-          <button onClick={() => setActiveHub('TRADE')} className={`px-5 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 border whitespace-nowrap ${activeHub === 'TRADE' ? 'bg-terminal-green text-terminal-black border-terminal-green shadow-[0_0_10px_rgba(var(--terminal-green-rgb),0.3)]' : 'text-gray-500 border-transparent hover:text-terminal-contrast'}`}><Wallet2 size={14} /> TRADE_STATION</button>
-          <button onClick={() => setActiveHub('BETTING')} className={`px-5 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 border whitespace-nowrap ${activeHub === 'BETTING' ? 'bg-terminal-green text-terminal-black border-terminal-green shadow-[0_0_10px_rgba(var(--terminal-green-rgb),0.3)]' : 'text-gray-500 border-transparent hover:text-terminal-contrast'}`}><Trophy size={14} /> BETTING_MARKET</button>
-          <button onClick={() => setActiveHub('CRYPTO')} className={`px-5 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 border whitespace-nowrap ${activeHub === 'CRYPTO' ? 'bg-terminal-green text-terminal-black border-terminal-green shadow-[0_0_10px_rgba(var(--terminal-green-rgb),0.3)]' : 'text-gray-500 border-transparent hover:text-terminal-contrast'}`}><Cpu size={14} /> CRYPTO_HUB</button>
-          <button onClick={() => setActiveHub('STOCKS')} className={`px-5 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 border whitespace-nowrap ${activeHub === 'STOCKS' ? 'bg-terminal-green text-terminal-black border-terminal-green shadow-[0_0_10px_rgba(var(--terminal-green-rgb),0.3)]' : 'text-gray-500 border-transparent hover:text-terminal-contrast'}`}><Briefcase size={14} /> STOCK_HUB</button>
-          <button onClick={() => setActiveHub('COMMODITIES')} className={`px-5 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 border whitespace-nowrap ${activeHub === 'COMMODITIES' ? 'bg-terminal-green text-terminal-black border-terminal-green shadow-[0_0_10px_rgba(var(--terminal-green-rgb),0.3)]' : 'text-gray-500 border-transparent hover:text-terminal-contrast'}`}><Droplets size={14} /> COMMODITIES</button>
-          <button onClick={() => setActiveHub('FOREX')} className={`px-5 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 border whitespace-nowrap ${activeHub === 'FOREX' ? 'bg-terminal-green text-terminal-black border-terminal-green shadow-[0_0_10px_rgba(var(--terminal-green-rgb),0.3)]' : 'text-gray-500 border-transparent hover:text-terminal-contrast'}`}><Banknote size={14} /> FOREX</button>
-          <button onClick={() => setActiveHub('BONDS')} className={`px-5 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 border whitespace-nowrap ${activeHub === 'BONDS' ? 'bg-terminal-green text-terminal-black border-terminal-green shadow-[0_0_10px_rgba(var(--terminal-green-rgb),0.3)]' : 'text-gray-500 border-transparent hover:text-terminal-contrast'}`}><Landmark size={14} /> BONDS</button>
-          <button onClick={() => setActiveHub('MACRO')} className={`px-5 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 border whitespace-nowrap ${activeHub === 'MACRO' ? 'bg-terminal-green text-terminal-black border-terminal-green shadow-[0_0_10px_rgba(var(--terminal-green-rgb),0.3)]' : 'text-gray-500 border-transparent hover:text-terminal-contrast'}`}><LineChart size={14} /> MACRO_INTEL</button>
+          <button onClick={() => setActiveHub('HUB')} className={`px-5 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 border whitespace-nowrap ${activeHub === 'HUB' ? 'bg-terminal-green text-terminal-black border-terminal-green' : 'text-gray-500 border-transparent hover:text-terminal-contrast'}`}><Home size={14} /> CENTRAL_HUB</button>
+          <button onClick={() => setActiveHub('TRADE')} className={`px-5 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 border whitespace-nowrap ${activeHub === 'TRADE' ? 'bg-terminal-green text-terminal-black border-terminal-green' : 'text-gray-500 border-transparent hover:text-terminal-contrast'}`}><Wallet2 size={14} /> TRADE_STATION</button>
+          <button onClick={() => setActiveHub('BETTING')} className={`px-5 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 border whitespace-nowrap ${activeHub === 'BETTING' ? 'bg-terminal-green text-terminal-black border-terminal-green' : 'text-gray-500 border-transparent hover:text-terminal-contrast'}`}><Trophy size={14} /> BETTING_MARKET</button>
+          <button onClick={() => setActiveHub('CRYPTO')} className={`px-5 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 border whitespace-nowrap ${activeHub === 'CRYPTO' ? 'bg-terminal-green text-terminal-black border-terminal-green' : 'text-gray-500 border-transparent hover:text-terminal-contrast'}`}><Cpu size={14} /> CRYPTO_HUB</button>
+          <button onClick={() => setActiveHub('STOCKS')} className={`px-5 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 border whitespace-nowrap ${activeHub === 'STOCKS' ? 'bg-terminal-green text-terminal-black border-terminal-green' : 'text-gray-500 border-transparent hover:text-terminal-contrast'}`}><Briefcase size={14} /> STOCK_HUB</button>
+          <button onClick={() => setActiveHub('COMMODITIES')} className={`px-5 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 border whitespace-nowrap ${activeHub === 'COMMODITIES' ? 'bg-terminal-green text-terminal-black border-terminal-green' : 'text-gray-500 border-transparent hover:text-terminal-contrast'}`}><Droplets size={14} /> COMMODITIES</button>
+          <button onClick={() => setActiveHub('FOREX')} className={`px-5 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 border whitespace-nowrap ${activeHub === 'FOREX' ? 'bg-terminal-green text-terminal-black border-terminal-green' : 'text-gray-500 border-transparent hover:text-terminal-contrast'}`}><Banknote size={14} /> FOREX</button>
+          <button onClick={() => setActiveHub('BONDS')} className={`px-5 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 border whitespace-nowrap ${activeHub === 'BONDS' ? 'bg-terminal-green text-terminal-black border-terminal-green' : 'text-gray-500 border-transparent hover:text-terminal-contrast'}`}><Landmark size={14} /> BONDS</button>
+          <button onClick={() => setActiveHub('MACRO')} className={`px-5 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 border whitespace-nowrap ${activeHub === 'MACRO' ? 'bg-terminal-green text-terminal-black border-terminal-green' : 'text-gray-500 border-transparent hover:text-terminal-contrast'}`}><LineChart size={14} /> MACRO_INTEL</button>
         </div>
 
         <div className="flex items-center gap-4 w-full md:w-auto">
-          {/* Theme Switcher Scroll Wheel */}
           <ThemeScrollWheel />
-
           {activeHub === 'CRYPTO' && cryptoTab === 'TERMINAL' && (
             <div className="flex-1 md:flex-none bg-terminal-black border border-terminal-darkGreen px-4 py-2 flex items-center focus-within:border-terminal-green transition-all shadow-inner">
               <span className="text-terminal-green mr-2 font-bold animate-pulse">>>></span>
@@ -256,9 +235,7 @@ function App() {
 
       <main className="container mx-auto px-4 py-8 max-w-7xl">
         {activeHub === 'HUB' ? (
-           <GlobalCommandHub tickers={tickers} exchange={exchange} onAssetSelect={(t) => {
-             setSelectedAsset(t);
-           }} />
+           <GlobalCommandHub tickers={tickers} exchange={exchange} onAssetSelect={(t) => setSelectedAsset(t)} />
         ) : activeHub === 'TRADE' ? (
           <TradeHub cryptoTickers={tickers} />
         ) : activeHub === 'BETTING' ? (
@@ -310,33 +287,55 @@ function App() {
                                 <th className="p-4 text-right cursor-pointer" onClick={() => handleSort(SortField.PRICE)}>INDEX_PX</th>
                                 <th className="p-4 text-right cursor-pointer" onClick={() => handleSort(SortField.CHANGE)}>24H_CHG</th>
                                 <th className="p-4 text-right cursor-pointer" onClick={() => handleSort(SortField.VOLUME)}>VOL_24H</th>
-                                <th className="p-4 text-right cursor-pointer hidden lg:table-cell" onClick={() => handleSort(SortField.VOLATILITY)}>VOLA</th>
-                                <th className="p-4 text-right cursor-pointer hidden xl:table-cell" title="Bid-Ask Spread">SPREAD</th>
-                                <th className="p-4 text-right cursor-pointer hidden xl:table-cell" onClick={() => handleSort(SortField.FUNDING_RATE)}>FUNDING</th>
-                                <th className="p-4 text-right cursor-pointer hidden xl:table-cell" onClick={() => handleSort(SortField.OPEN_INTEREST)}>O.I.</th>
+                                <th className="p-4 text-center cursor-pointer hidden md:table-cell">SENTIMENT</th>
+                                <th className="p-4 text-right cursor-pointer hidden lg:table-cell" title="High / Low">24H_RANGE</th>
+                                <th className="p-4 text-right cursor-pointer hidden xl:table-cell" onClick={() => handleSort(SortField.SPREAD)}>SPREAD_%</th>
+                                <th className="p-4 text-right cursor-pointer hidden xl:table-cell" onClick={() => handleSort(SortField.TRADES)}>OPS_24H</th>
                                 <th className="p-4 text-center">CMD</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-terminal-darkGreen/30 font-mono text-xs font-bold">
                             {loading ? (
-                              <tr><td colSpan={9} className="p-24 text-center text-terminal-green animate-pulse tracking-widest font-black uppercase">SYNCHRONIZING_MARKET_VECTORS...</td></tr>
-                            ) : filteredTickers.slice(0, visibleCount).map((ticker) => (
+                              <tr><td colSpan={10} className="p-24 text-center text-terminal-green animate-pulse tracking-widest font-black uppercase">SYNCHRONIZING_MARKET_VECTORS...</td></tr>
+                            ) : filteredTickers.slice(0, visibleCount).map((ticker) => {
+                              const isPositive = parseFloat(ticker.priceChangePercent) >= 0;
+                              return (
                               <tr key={ticker.symbol} className="hover:bg-terminal-green/5 transition-all cursor-pointer group border-l-2 border-transparent hover:border-terminal-green" onClick={() => setSelectedAsset(ticker)}>
-                                <td className="p-4"><span className="font-black text-terminal-contrast text-sm">{ticker.baseAsset}</span> <span className="text-[8px] text-terminal-dim border border-terminal-darkGreen px-1.5 py-0.5 ml-1">{ticker.quoteAsset}</span></td>
-                                <td className="p-4 text-right text-gray-200 tabular-nums font-black">${parseFloat(ticker.lastPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</td>
-                                <td className={`p-4 text-right font-black ${parseFloat(ticker.priceChangePercent) >= 0 ? 'text-green-400' : 'text-red-500'}`}>{ticker.priceChangePercent}%</td>
-                                <td className="p-4 text-right text-gray-500 tabular-nums">${(parseFloat(ticker.quoteVolume) / 1000000).toFixed(2)}M</td>
-                                <td className="p-4 text-right text-terminal-dim tabular-nums hidden lg:table-cell">{ticker.volatility.toFixed(2)}%</td>
-                                <td className="p-4 text-right text-gray-600 tabular-nums hidden xl:table-cell">{ticker.spread.toFixed(4)}%</td>
-                                <td className={`p-4 text-right tabular-nums hidden xl:table-cell ${ticker.fundingRate && parseFloat(ticker.fundingRate) < 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                  {ticker.fundingRate ? (parseFloat(ticker.fundingRate) * 100).toFixed(4) + '%' : '---'}
+                                <td className="p-4">
+                                  <div className="flex flex-col">
+                                    <span className="font-black text-terminal-contrast text-sm">{ticker.baseAsset}</span>
+                                    <span className="text-[8px] text-gray-600 font-black tracking-widest">{ticker.quoteAsset}</span>
+                                  </div>
                                 </td>
-                                <td className="p-4 text-right text-terminal-dim tabular-nums hidden xl:table-cell">
-                                  {ticker.openInterest ? (parseFloat(ticker.openInterest) / 1000000).toFixed(1) + 'M' : '---'}
+                                <td className="p-4 text-right text-gray-200 tabular-nums font-black">${parseFloat(ticker.lastPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</td>
+                                <td className={`p-4 text-right font-black ${isPositive ? 'text-green-400' : 'text-red-500'}`}>{ticker.priceChangePercent}%</td>
+                                <td className="p-4 text-right text-gray-500 tabular-nums">${(parseFloat(ticker.quoteVolume) / 1000000).toFixed(2)}M</td>
+                                <td className="p-4 text-center hidden md:table-cell">
+                                  {isPositive ? (
+                                    <div className="flex items-center justify-center gap-1 text-green-500 bg-green-500/10 border border-green-500/30 px-2 py-0.5 text-[8px] font-black uppercase tracking-tighter">
+                                      <TrendingUp size={10} /> BULLISH_ALPHA
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center justify-center gap-1 text-red-500 bg-red-500/10 border border-red-500/30 px-2 py-0.5 text-[8px] font-black uppercase tracking-tighter">
+                                      <TrendingDown size={10} /> BEARISH_BETA
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="p-4 text-right text-gray-600 tabular-nums hidden lg:table-cell text-[10px]">
+                                  <div className="flex flex-col">
+                                    <span className="text-green-900/60 font-bold tracking-tighter">H: {parseFloat(ticker.highPrice).toFixed(2)}</span>
+                                    <span className="text-red-900/60 font-bold tracking-tighter">L: {parseFloat(ticker.lowPrice).toFixed(2)}</span>
+                                  </div>
+                                </td>
+                                <td className="p-4 text-right text-terminal-dim tabular-nums hidden xl:table-cell text-[10px] font-black">
+                                  {ticker.spread.toFixed(4)}%
+                                </td>
+                                <td className="p-4 text-right text-gray-500 tabular-nums hidden xl:table-cell text-[10px]">
+                                  {ticker.count.toLocaleString()}
                                 </td>
                                 <td className="p-4 text-center"><button className="text-terminal-green p-1.5 border border-terminal-darkGreen group-hover:border-terminal-green transition-all"><Terminal size={12} /></button></td>
                               </tr>
-                            ))}
+                            )})}
                         </tbody>
                         </table>
                     </div>

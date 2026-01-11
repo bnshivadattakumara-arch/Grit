@@ -1,12 +1,18 @@
-
 import { GoogleGenAI } from "@google/genai";
 import { EnrichedTicker } from '../types';
 
-// Initialize Gemini AI
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+let aiInstance: GoogleGenAI | null = null;
+
+const getAI = () => {
+  if (!aiInstance) {
+    aiInstance = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  }
+  return aiInstance;
+};
 
 export const analyzeAssetWithAI = async (ticker: EnrichedTicker, priceHistory: number[]): Promise<string> => {
   try {
+    const ai = getAI();
     const historyStr = priceHistory.length > 0 
       ? priceHistory.map(p => p.toFixed(2)).join(', ') 
       : "Not available";
@@ -35,7 +41,6 @@ export const analyzeAssetWithAI = async (ticker: EnrichedTicker, priceHistory: n
       Keep tone robotic, precise, and professional. No markdown bolding. Use ">" for bullet points.
     `;
 
-    // Fix: Using gemini-3-flash-preview for text tasks as per model selection guidelines
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
@@ -50,6 +55,7 @@ export const analyzeAssetWithAI = async (ticker: EnrichedTicker, priceHistory: n
 
 export const askAI = async (query: string): Promise<string> => {
     try {
+        const ai = getAI();
         const prompt = `
           SYSTEM: You are "Terminal_v2.1_Core", a helpful, robotic crypto trading assistant embedded in a CLI.
           QUERY: "${query}"
@@ -61,7 +67,6 @@ export const askAI = async (query: string): Promise<string> => {
           - Format: Pure text, no markdown.
         `;
 
-        // Fix: Using gemini-3-flash-preview for text tasks as per model selection guidelines
         const response = await ai.models.generateContent({
             model: 'gemini-3-flash-preview',
             contents: prompt,
