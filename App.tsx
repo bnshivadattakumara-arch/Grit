@@ -223,7 +223,7 @@ function App() {
           <ThemeScrollWheel />
           {activeHub === 'CRYPTO' && cryptoTab === 'TERMINAL' && (
             <div className="flex-1 md:flex-none bg-terminal-black border border-terminal-darkGreen px-4 py-2 flex items-center focus-within:border-terminal-green transition-all shadow-inner">
-              <span className="text-terminal-green mr-2 font-bold animate-pulse">>>></span>
+              <span className="text-terminal-green mr-2 font-bold animate-pulse">{" >>> "}</span>
               <input type="text" placeholder="SEARCH_NODE..." className="bg-transparent border-none outline-none text-sm text-terminal-contrast w-full md:w-32 focus:md:w-48 transition-all placeholder-gray-800 uppercase font-bold" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
           )}

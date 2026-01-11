@@ -163,10 +163,10 @@ export const TransactionVisualizer: React.FC = () => {
                onChange={(e) => setMinMagnitude(Number(e.target.value))}
              >
                 <option value="0">ALL_TRAFFIC</option>
-                <option value="1000">> $1,000</option>
-                <option value="10000">> $10,000</option>
-                <option value="50000">> $50,000</option>
-                <option value="100000">> $100,000 (WHALE)</option>
+                <option value="1000">{" > $1,000"}</option>
+                <option value="10000">{" > $10,000"}</option>
+                <option value="50000">{" > $50,000"}</option>
+                <option value="100000">{" > $100,000 (WHALE)"}</option>
              </select>
           </div>
           <button 

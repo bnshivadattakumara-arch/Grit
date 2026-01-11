@@ -96,9 +96,9 @@ export const GlobalCommandHub: React.FC<GlobalCommandHubProps> = ({ tickers, exc
                 <Cpu size={12}/> CORE_ARCHITECTURE // HOW_IT_WORKS
               </div>
               <div className="text-gray-400 leading-relaxed space-y-1">
-                <p>> <span className="text-terminal-green font-bold">MULTIVECTOR_FEED:</span> Ingests L1/L2 data from Binance, Bybit, OKX, and Yahoo Global for cross-asset correlation.</p>
-                <p>> <span className="text-terminal-green font-bold">NEURAL_SENTINEL:</span> Leverages Gemini 3.1 Pro for contextual sentiment extraction and technical regime detection.</p>
-                <p>> <span className="text-terminal-green font-bold">STRESS_RESOLVER:</span> Real-time monitoring of Bonds, Forex, and Commodities to track institutional liquidity rotation.</p>
+                <p>{" > "} <span className="text-terminal-green font-bold">MULTIVECTOR_FEED:</span> Ingests L1/L2 data from Binance, Bybit, OKX, and Yahoo Global for cross-asset correlation.</p>
+                <p>{" > "} <span className="text-terminal-green font-bold">NEURAL_SENTINEL:</span> Leverages Gemini 3.1 Pro for contextual sentiment extraction and technical regime detection.</p>
+                <p>{" > "} <span className="text-terminal-green font-bold">STRESS_RESOLVER:</span> Real-time monitoring of Bonds, Forex, and Commodities to track institutional liquidity rotation.</p>
               </div>
             </section>
 
@@ -289,7 +289,7 @@ export const GlobalCommandHub: React.FC<GlobalCommandHubProps> = ({ tickers, exc
 
             <div className="p-3 bg-black border-t border-terminal-darkGreen">
               <form onSubmit={processQuery} className="relative group">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-terminal-green font-black text-xs opacity-40">{'>'}</div>
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-terminal-green font-black text-xs opacity-40">{" > "}</div>
                 <input 
                   type="text" 
                   autoFocus
