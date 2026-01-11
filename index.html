@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grit Terminal | World's 1st Traders Ecosystem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://s3.tradingview.com/tv.js"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              terminal: {
+                black: 'var(--terminal-black)',
+                green: 'var(--terminal-green)',
+                darkGreen: 'var(--terminal-darkGreen)',
+                dim: 'var(--terminal-dim)',
+                alert: 'var(--terminal-alert)',
+                contrast: 'var(--terminal-contrast)'
+              }
+            },
+            fontFamily: {
+              mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'],
+            }
+          }
+        },
+        darkMode: 'class'
+      }
+    </script>
+    <style>
+      :root {
+        --terminal-black: #0c0c0c;
+        --terminal-green: #4ade80;
+        --terminal-darkGreen: #14532d;
+        --terminal-dim: #22c55e;
+        --terminal-alert: #ef4444;
+        --terminal-contrast: #ffffff;
+      }
+
+      /* THEME ENGINE */
+      .theme-bloomberg {
+        --terminal-black: #000000;
+        --terminal-green: #ffb800;
+        --terminal-darkGreen: #4a3700;
+        --terminal-dim: #b88600;
+        --terminal-alert: #ff0000;
+        --terminal-contrast: #ffffff;
+      }
+      .theme-ocean {
+        --terminal-black: #051923;
+        --terminal-green: #00a6fb;
+        --terminal-darkGreen: #003554;
+        --terminal-dim: #0582ca;
+        --terminal-alert: #f07167;
+        --terminal-contrast: #ffffff;
+      }
+      .theme-sun {
+        --terminal-black: #1a0f00;
+        --terminal-green: #fb8500;
+        --terminal-darkGreen: #3d2100;
+        --terminal-dim: #ffb703;
+        --terminal-alert: #d00000;
+        --terminal-contrast: #ffffff;
+      }
+      .theme-white {
+        --terminal-black: #f8fafc;
+        --terminal-green: #10b981;
+        --terminal-darkGreen: #d1fae5;
+        --terminal-dim: #059669;
+        --terminal-alert: #dc2626;
+        --terminal-contrast: #0f172a;
+      }
+      .theme-grey {
+        --terminal-black: #121212;
+        --terminal-green: #e2e8f0;
+        --terminal-darkGreen: #334155;
+        --terminal-dim: #94a3b8;
+        --terminal-alert: #f87171;
+        --terminal-contrast: #ffffff;
+      }
+      .theme-glass {
+        --terminal-black: rgba(10, 10, 10, 0.8);
+        --terminal-green: #4ade80;
+        --terminal-darkGreen: #14532d;
+        --terminal-dim: #22c55e;
+        --terminal-alert: #ef4444;
+        --terminal-contrast: #ffffff;
+        background: linear-gradient(135deg, #0f172a 0%, #020617 100%) fixed !important;
+      }
+      .theme-apple-glass {
+        --terminal-black: rgba(255, 255, 255, 0.1);
+        --terminal-green: #ffffff;
+        --terminal-darkGreen: rgba(255, 255, 255, 0.2);
+        --terminal-dim: rgba(255, 255, 255, 0.6);
+        --terminal-alert: #ff3b30;
+        --terminal-contrast: #ffffff;
+        background: linear-gradient(to bottom right, #1d1d1f, #000000) fixed !important;
+      }
+
+      .terminal-glow {
+        text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+      }
+
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: var(--terminal-black);
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: var(--terminal-darkGreen);
+        border: 2px solid var(--terminal-black);
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: var(--terminal-green);
+      }
+
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      @keyframes scan {
+        0% { transform: translateY(-100%); }
+        100% { transform: translateY(1000%); }
+      }
+      .scanline {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: rgba(74, 222, 128, 0.03);
+        opacity: 0.5;
+        z-index: 100;
+        pointer-events: none;
+        animation: scan 8s linear infinite;
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at 50% 50%, rgba(18, 16, 16, 0) 0%, rgba(0, 0, 0, 0.1) 100%);
+        pointer-events: none;
+        z-index: 99;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "recharts": "https://esm.sh/recharts@^3.6.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "d3": "https://esm.sh/d3@^7.9.0",
+    "topojson-client": "https://esm.sh/topojson-client@^3.1.0"
+  }
+}
+</script>
+</head>
+  <body class="font-mono antialiased min-h-screen overflow-y-auto transition-colors duration-500 bg-terminal-black text-terminal-green">
+    <div class="scanline"></div>
+    <div id="root"></div>
+  </body>
+</html>
